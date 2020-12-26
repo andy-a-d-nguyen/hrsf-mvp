@@ -2,6 +2,8 @@ import React from 'react';
 import styled from 'styled-components/macro';
 import GoogleMapReact from 'google-map-react';
 import axios from 'axios';
+// import { Modal } from '@material-ui/core';
+import ModalComponent from './ModalComponent';
 
 const Wrapper = styled.div`
   width: 100%;
@@ -23,9 +25,17 @@ class Map extends React.Component {
       address: '',
       raceByPercent: [],
       raceByCount: [],
+      isModalOpen: false,
     }
 
     this.handleApiLoaded = this.handleApiLoaded.bind(this);
+    this.handleModal = this.handleModal.bind(this);
+  }
+
+  handleModal(event) {
+    this.setState({
+      isModalOpen: !this.state.isModalOpen
+    })
   }
 
   handleApiLoaded(map, maps) {
@@ -37,7 +47,8 @@ class Map extends React.Component {
         if (status === maps.GeocoderStatus.OK) {
           if (results[0]) {
             this.setState({
-              address: results[0].formatted_address
+              address: results[0].formatted_address,
+              isModalOpen: true
             })
             axios({
               method: 'get',
@@ -77,6 +88,16 @@ class Map extends React.Component {
           yesIWantToUseGoogleMapApiInternals
           onGoogleApiLoaded={({map, maps}) => this.handleApiLoaded(map, maps)}
         >
+          {this.state.isModalOpen ?
+            <ModalComponent
+              open={this.state.isModalOpen}
+              onClose={this.handleModal}
+              raceByCount={this.state.raceByCount}
+              raceByPercent={this.state.raceByPercent}
+            >
+
+            </ModalComponent>
+            : null}
         </GoogleMapReact>
       </Wrapper>
     )
