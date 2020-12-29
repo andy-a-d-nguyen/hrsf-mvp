@@ -2,6 +2,7 @@ import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { Modal, AppBar, Tabs, Tab, Container } from '@material-ui/core';
 import TabPanelComponent from './TabPanelComponent';
+import RaceChartComponent from './RaceChartComponent';
 
 const useStyles = makeStyles({
   modal: {
@@ -12,7 +13,7 @@ const useStyles = makeStyles({
     top: '50%',
     left: '50%',
     // transform: 'translate(-50%, -50%)',
-    height: '50%',
+    height: '60%',
     width: '50%',
     // display: 'flex',
     position: 'absolute',
@@ -28,9 +29,9 @@ const ModalComponent = (props) => {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
-  const text = (
-    <p>Hello World</p>
-  )
+  // const text = (
+  //   <p>Hello World</p>
+  // )
   return (
     <Modal
       className={classes.modal}
@@ -47,8 +48,8 @@ const ModalComponent = (props) => {
             <Tab label='Jobs'></Tab>
           </Tabs>
         </AppBar>
-        <TabPanelComponent value={value} index={0}>
-          Hello 1
+        <TabPanelComponent value={value} index={0} >
+          <RaceChartComponent raceByCount={props.raceByCount} raceByPercent={props.raceByPercent} />
         </TabPanelComponent>
         <TabPanelComponent value={value} index={1}>
           Hello 2

@@ -25,4 +25,4 @@ yarn-error.log*
 # API key
 /src/api.js
 .env
-precisely.js
+indeed.js
