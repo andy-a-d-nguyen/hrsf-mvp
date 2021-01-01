@@ -29,8 +29,9 @@ class Map extends React.Component {
       zipCode: '',
       raceByPercent: [],
       raceByCount: [],
-      isModalOpen: false,
+      showModal: false,
       ip: '',
+      jobs: [],
     }
 
     this.handleApiLoaded = this.handleApiLoaded.bind(this);
@@ -54,7 +55,7 @@ class Map extends React.Component {
 
   handleModal(event) {
     this.setState({
-      isModalOpen: !this.state.isModalOpen
+      showModal: !this.state.showModal
     })
   }
 
@@ -80,8 +81,11 @@ class Map extends React.Component {
             this.setState({
               address: rejoinedAddr.slice(0, rejoinedAddr.length - 1),
               country: addressArr[addressArr.length - 1],
-              isModalOpen: true
+              showModal: true
             })
+
+            /* DEMOGRAPHICS */
+
             // axios({
             //   method: 'get',
             //   url: 'https://api.precisely.com/demographics-segmentation/v1/demographics/byaddress?',
@@ -99,6 +103,46 @@ class Map extends React.Component {
             // }).then(res => this.setState({
             //   raceByPercent: res.data.themes.raceAndEthnicityTheme.rangeVariable[0].field,
             //   raceByCount: res.data.themes.raceAndEthnicityTheme.rangeVariable[1].field,
+            // }))
+            //   .catch(err => console.log(err))
+
+            /* JOBS */
+
+            axios({
+              method: 'get',
+              url: 'https://api.adzuna.com/v1/api/jobs/us/search/1',
+              params: {
+                app_id: process.env.REACT_APP_ADZUNA_API_ID,
+                app_key: process.env.REACT_APP_ADZUNA_API_KEY,
+                results_per_page: 10,
+                where: this.state.zipCode,
+                // what: 'developer'
+              }
+            }).then(res => this.setState({
+              jobs: res.data.results
+            }))
+              .catch(err => console.log(err));
+
+            // axios({
+            //   method: 'get',
+            //   url: 'https://jobs.github.com/positions.json',
+            //   params: {
+            //     location: this.state.zipCode
+            //   }
+            // }).then(res => console.log(res))
+            //   .catch(err => console.log(err))
+
+            // axios({
+            //   method: 'get',
+            //   url: 'https://www.themuse.com/api/public/jobs',
+            //   params : {
+            //     api_key: process.env.REACT_APP_THEMUSE_API_KEY,
+            //     page: '1',
+            //     category: 'Engineering',
+            //     location: this.state.zipCode,
+            //   }
+            // }).then(res => this.setState({
+            //   jobs: res.data.results
             // }))
             //   .catch(err => console.log(err))
           }
@@ -120,12 +164,14 @@ class Map extends React.Component {
           yesIWantToUseGoogleMapApiInternals
           onGoogleApiLoaded={({map, maps}) => this.handleApiLoaded(map, maps)}
         >
-          {this.state.isModalOpen ?
+          {this.state.showModal ?
             <ModalComponent
-              open={this.state.isModalOpen}
-              onClose={this.handleModal}
+              show={this.state.showModal}
+              onHide={this.handleModal}
               raceByCount={this.state.raceByCount}
               raceByPercent={this.state.raceByPercent}
+              jobs={this.state.jobs}
+              zipCode={this.state.zipCode}
             >
 
             </ModalComponent>
