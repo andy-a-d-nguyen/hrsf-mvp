@@ -21,19 +21,19 @@ const Header = styled.h2`
   color: skyblue;
 `;
 
-const RaceChartComponent = (props) => {
+const GenderChartComponent = (props) => {
   let legendData = [];
   let chartData = [];
-  const [count, setCount] = React.useState(props.raceByCount);
-  const [percent, setPercent] = React.useState(props.raceByPercent);
+  const [count, setCount] = React.useState(props.genderByCount);
+  const [percent, setPercent] = React.useState(props.genderByPercent);
 
   React.useEffect(() => {
-    setCount(props.raceByCount)
-  }, [props.raceByCount])
+    setCount(props.genderByCount)
+  }, [props.genderByCount])
 
   React.useEffect(() => {
-    setPercent(props.raceByPercent)
-  }, [props.raceByPercent])
+    setPercent(props.genderByPercent)
+  }, [props.genderByPercent])
 
   if (Object.keys(count).length && Object.keys(percent).length) {
     count.field.map((field, index) => legendData.push({title: `${index + 1}-${field.description}`, color: 'skyblue'}))
@@ -42,7 +42,7 @@ const RaceChartComponent = (props) => {
 
   return (
     <React.Fragment>
-      <Header>{props.raceByPercent.description}</Header>
+      <Header>{props.genderByPercent.description}</Header>
       <Wrapper>
         {Object.keys(count).length && Object.keys(percent).length ?
           <React.Fragment>
@@ -58,6 +58,6 @@ const RaceChartComponent = (props) => {
       </Wrapper>
     </React.Fragment>
   )
-}
+};
 
-export default RaceChartComponent;
+export default GenderChartComponent;

@@ -3,10 +3,6 @@ import { ListGroup, Card, CardGroup, InputGroup, Form, FormControl, Button } fro
 import styled from 'styled-components';
 import axios from 'axios';
 
-const Wrapper = styled.div`
-  overflow: 'hidden';
-`;
-
 const removeTags = (str) => {
   if ((str===null) || (str===''))
       return false;

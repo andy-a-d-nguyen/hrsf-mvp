@@ -10,30 +10,24 @@ import {
   DiscreteColorLegend,
 } from 'react-vis';
 import '../node_modules/react-vis/dist/style.css';
-import { Spinner } from 'react-bootstrap';
 
 const Wrapper = styled.div`
-  display: inline-flex;
+  display: block;
 `;
 
-const Header = styled.h2`
-  text-align: center;
-  color: skyblue;
-`;
-
-const RaceChartComponent = (props) => {
+const AgeChartComponent = (props) => {
   let legendData = [];
   let chartData = [];
-  const [count, setCount] = React.useState(props.raceByCount);
-  const [percent, setPercent] = React.useState(props.raceByPercent);
+  const [count, setCount] = React.useState(props.ageByCount);
+  const [percent, setPercent] = React.useState(props.ageByPercent);
 
   React.useEffect(() => {
-    setCount(props.raceByCount)
-  }, [props.raceByCount])
+    setCount(props.ageByCount)
+  }, [props.ageByCount])
 
   React.useEffect(() => {
-    setPercent(props.raceByPercent)
-  }, [props.raceByPercent])
+    setPercent(props.ageByPercent)
+  }, [props.ageByPercent])
 
   if (Object.keys(count).length && Object.keys(percent).length) {
     count.field.map((field, index) => legendData.push({title: `${index + 1}-${field.description}`, color: 'skyblue'}))
@@ -42,22 +36,22 @@ const RaceChartComponent = (props) => {
 
   return (
     <React.Fragment>
-      <Header>{props.raceByPercent.description}</Header>
+      <h4>{props.ageByPercent.description}</h4>
       <Wrapper>
         {Object.keys(count).length && Object.keys(percent).length ?
           <React.Fragment>
             <XYPlot height={300} width={300}>
             <XAxis />
             <YAxis />
-            <VerticalBarSeries data={chartData} color='skyblue'/>
+            <VerticalBarSeries data={chartData} color='skyblue' barWidth='0.2'/>
             </XYPlot>
             <DiscreteColorLegend items={legendData}/>
           </React.Fragment>
-          : <Spinner animation='border'/>
+          : 'Loading...'
         }
       </Wrapper>
     </React.Fragment>
   )
 }
 
-export default RaceChartComponent;
+export default AgeChartComponent;
