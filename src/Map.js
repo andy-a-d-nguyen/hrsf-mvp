@@ -2,7 +2,6 @@ import React from 'react';
 import styled from 'styled-components/macro';
 import GoogleMapReact from 'google-map-react';
 import axios from 'axios';
-// import { Modal } from '@material-ui/core';
 import ModalComponent from './ModalComponent';
 
 const Wrapper = styled.div`
@@ -27,6 +26,9 @@ class Map extends React.Component {
       state: '',
       country: '',
       zipCode: '',
+      addressComponents: [],
+      formattedAddress: '',
+      location: {},
       ageByPercent: {},
       ageByCount: {},
       genderByPercent: {},
@@ -34,28 +36,18 @@ class Map extends React.Component {
       raceByPercent: {},
       raceByCount: {},
       showModal: false,
-      ip: '',
       jobs: [],
-      placesOfInterest: [],
+      requestRadius: '1500',
+      requestType: ['tourist_attraction'],
+      placesOfInterestUnformatted: [],
+      placesOfInterestFormatted: []
     }
 
     this.handleApiLoaded = this.handleApiLoaded.bind(this);
     this.handleModal = this.handleModal.bind(this);
-    this.getIPAddress = this.getIPAddress.bind(this);
-  }
-
-  componentDidMount() {
-    // this.getIPAddress();
-  }
-
-  getIPAddress() {
-    axios({
-      method: 'get',
-      url: `https://api.ipdata.co?api-key=${process.env.REACT_APP_IPDATA_API_KEY}`,
-    }).then(res => this.setState({
-      ip: res.data.ip
-    }))
-      .catch(err => console.log(err))
+    this.getDemographics = this.getDemographics.bind(this);
+    this.getJobs = this.getJobs.bind(this);
+    // this.waitForData = this.waitForData.bind(this);
   }
 
   handleModal(event) {
@@ -64,112 +56,150 @@ class Map extends React.Component {
     })
   }
 
+  getDemographics() {
+    axios({
+      method: 'get',
+      url: 'https://api.precisely.com/demographics-segmentation/v1/demographics/byaddress?',
+      headers: {
+        Authorization: `Bearer ${process.env.REACT_APP_PRECISELY_API_KEY}`,
+        Accept: 'application/json'
+      },
+      params: {
+        address: this.state.address,
+        country: this.state.country,
+        filter: 'raceAndEthnicityTheme,populationTheme',
+        valueFormat: 'Both',
+        variableLevel: 'Key'
+      }
+    })
+      .then(res => this.setState({
+        ageByPercent: res.data.themes.populationTheme.rangeVariable[0],
+        ageByCount: res.data.themes.populationTheme.rangeVariable[1],
+        genderByPercent: res.data.themes.populationTheme.rangeVariable[2],
+        genderByCount: res.data.themes.populationTheme.rangeVariable[3],
+        raceByPercent: res.data.themes.raceAndEthnicityTheme.rangeVariable[0],
+        raceByCount: res.data.themes.raceAndEthnicityTheme.rangeVariable[1],
+      }))
+         // .then(res => console.log(res))
+      .catch(err => console.log(err))
+  }
+
+  getJobs() {
+    axios({
+      method: 'get',
+      url: 'https://api.adzuna.com/v1/api/jobs/us/search/1',
+      params: {
+        app_id: process.env.REACT_APP_ADZUNA_API_ID,
+        app_key: process.env.REACT_APP_ADZUNA_API_KEY,
+        results_per_page: 10,
+        where: this.state.zipCode,
+        // what: 'developer'
+      }
+    }).then(res => this.setState({
+        jobs: res.data.results
+      }))
+      .catch(err => console.log(err));
+  }
+
+  // waitForData(result) {
+  //   setInterval((result) => {
+  //     if (!result || !result.photos || !result.photos[0]) {
+  //       console.log('still waiting')
+  //     } else {
+  //       console.log('exists');
+  //       clearInterval(this.waitForData);
+  //     }
+  //   }, 2000);
+  // }
+
   handleApiLoaded(map, maps) {
     // console.log(maps);
     const geocoder = new maps.Geocoder();
     const service = new maps.places.PlacesService(map);
     map.addListener('click', (event) => {
+    /* ADDRESS COMPONENTS */
       geocoder.geocode({
         'latLng': event.latLng
       }, (results, status) => {
         if (status === maps.GeocoderStatus.OK) {
           if (results[0]) {
-            // console.log(results[0]);
-            for (let i = 0; i < results[0].address_components.length; i++) {
-              if (results[0].address_components[i].types[0] === 'postal_code') {
-                this.setState({
-                  zipCode: results[0].address_components[i].long_name,
-                })
-              }
-            }
-            const addressArr = results[0].formatted_address.split(' ');
-            const reformattedAddrArr = addressArr.slice(0, addressArr.length - 1);
-            const rejoinedAddr = reformattedAddrArr.join(' ');
+            console.log(results[0]);
             this.setState({
-              address: rejoinedAddr.slice(0, rejoinedAddr.length - 1),
-              country: addressArr[addressArr.length - 1],
-              showModal: true
-            })
-
+              addressComponents: results[0].address_components,
+              formattedAddress: results[0].formatted_address,
+              location: {
+                latitude: event.latLng.lat(),
+                longitude: event.latLng.lng()
+              }
+            }, () => {
+                if (this.state.addressComponents.length > 0) {
+                  for (let i = 0; i < this.state.addressComponents.length; i++) {
+                    if (this.state.addressComponents[i].types[0] === 'postal_code') {
+                      this.setState({
+                        zipCode: results[0].address_components[i].long_name,
+                        address: results[0].formatted_address.slice(0, results[0].formatted_address.length - 5),
+                        country: results[0].formatted_address.slice(results[0].formatted_address.length - 3),
+                        showModal: true
+                      })
+                    }
+                  }
+                }
+              }
+            )
             /* DEMOGRAPHICS */
 
-            axios({
-              method: 'get',
-              url: 'https://api.precisely.com/demographics-segmentation/v1/demographics/byaddress?',
-              headers: {
-                Authorization: `Bearer ${process.env.REACT_APP_PRECISELY_API_KEY}`,
-                Accept: 'application/json'
-              },
-              params: {
-                address: this.state.address,
-                country: this.state.country,
-                filter: 'raceAndEthnicityTheme,populationTheme',
-                valueFormat: 'Both',
-                variableLevel: 'Key'
-              }
-            })
-              .then(res => this.setState({
-                ageByPercent: res.data.themes.populationTheme.rangeVariable[0],
-                ageByCount: res.data.themes.populationTheme.rangeVariable[1],
-                genderByPercent: res.data.themes.populationTheme.rangeVariable[2],
-                genderByCount: res.data.themes.populationTheme.rangeVariable[3],
-                raceByPercent: res.data.themes.raceAndEthnicityTheme.rangeVariable[0],
-                raceByCount: res.data.themes.raceAndEthnicityTheme.rangeVariable[1],
-              }))
-                // .then(res => console.log(res))
-                .catch(err => console.log(err))
+            // this.getDemographics();
 
             /* JOBS */
 
-            // axios({
-            //   method: 'get',
-            //   url: 'https://api.adzuna.com/v1/api/jobs/us/search/1',
-            //   params: {
-            //     app_id: process.env.REACT_APP_ADZUNA_API_ID,
-            //     app_key: process.env.REACT_APP_ADZUNA_API_KEY,
-            //     results_per_page: 10,
-            //     where: this.state.zipCode,
-            //     // what: 'developer'
-            //   }
-            // }).then(res => this.setState({
-            //   jobs: res.data.results
-            // }))
-            //   .catch(err => console.log(err));
+            // this.getJobs();
           }
         }
-      });
-      // add code to get to search nearby attractions
+      })
+      /* NEARBY PLACES OF INTEREST */
+
       const nearbyRequest = {
         location: event.latLng,
-        radius: '1500',
-        type: ['tourist_attraction']
+        radius: this.state.requestRadius,
+        type: this.state.requestType,
       };
       service.nearbySearch(nearbyRequest, (results, status) => {
         if (status === maps.places.PlacesServiceStatus.OK) {
           console.log(results);
-          for (let i = 0; i < results.length; i++) {
-            const detailRequest = {
-              placeId: results[i].place_id,
-              fields: ['name', 'formatted_address', 'photo', 'url']
-            }
-            service.getDetails(detailRequest, (result, status) => {
-              if (status === maps.places.PlacesServiceStatus.OK) {
-                // console.log(result);
-                // console.log(result.photos[0].getUrl({maxWidth: 400, maxHeight: 400}));
-                this.setState({
-                  placesOfInterest: [
-                    ...this.state.placesOfInterest,
-                    {
-                      address: result.formatted_address,
-                      name: result.name,
-                      url: result.url,
-                      photo: result.photos[0].getUrl({maxWidth: 400, maxHeight: 400}),
-                    }
-                  ]
-                })
+          this.setState({
+            placesOfInterestUnformatted: results,
+            placesOfInterestFormatted: []
+          }, () => {
+            for (let i = 0; i < this.state.placesOfInterestUnformatted.length; i++) {
+              const detailRequest = {
+                placeId: this.state.placesOfInterestUnformatted[i].place_id,
+                fields: ['name', 'formatted_address', 'photo', 'url']
               }
-            })
-          }
+              service.getDetails(detailRequest, (result, status) => {
+                if (status === maps.places.PlacesServiceStatus.OK) {
+                  // console.log(result);
+                  // console.log(result.photos[0].getUrl({maxWidth: 400, maxHeight: 400}));
+                  if (!result || !result.photos || !result.photos[0]) {
+                    // this.waitForData(result);
+                    return;
+                  } else {
+                      this.setState({
+                        placesOfInterestFormatted: [
+                          ...this.state.placesOfInterestFormatted,
+                          {
+                            address: result.formatted_address,
+                            name: result.name,
+                            url: result.url,
+                            photo: result.photos[0].getUrl({maxWidth: 400, maxHeight: 400}),
+                          }
+                        ]
+                      })
+                    }
+                  }
+                }
+              )
+            }
+          })
         }
       })
     })
@@ -188,7 +218,7 @@ class Map extends React.Component {
           yesIWantToUseGoogleMapApiInternals
           onGoogleApiLoaded={({map, maps}) => this.handleApiLoaded(map, maps)}
         >
-          {this.state.showModal ?
+          {this.state.showModal && this.state.placesOfInterestFormatted.length > 0?
             <ModalComponent
               show={this.state.showModal}
               onHide={this.handleModal}
@@ -200,6 +230,8 @@ class Map extends React.Component {
               raceByCount={this.state.raceByCount}
               jobs={this.state.jobs}
               zipCode={this.state.zipCode}
+              placesOfInterest={this.state.placesOfInterestFormatted}
+              location={this.state.location}
             />
             : null}
         </GoogleMapReact>

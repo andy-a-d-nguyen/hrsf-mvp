@@ -4,6 +4,7 @@ import AgeChartComponent from './AgeChartComponent';
 import GenderChartComponent from './GenderChartComponent';
 import RaceChartComponent from './RaceChartComponent';
 import JobsComponent from './JobsComponent';
+import NearbyPlacesComponent from './NearbyPlacesComponent';
 
 const ModalComponent = (props) => {
   const [show, setShow] = React.useState(props.show);
@@ -23,6 +24,9 @@ const ModalComponent = (props) => {
         </Tab>
         <Tab eventKey='jobs' title='Jobs'>
           <JobsComponent jobs={props.jobs} zipCode={props.zipCode}/>
+        </Tab>
+        <Tab eventKey='nearby-places' title='Nearby Places of Interest'>
+          <NearbyPlacesComponent placesOfInterest={props.placesOfInterest} location={props.location}/>
         </Tab>
       </Tabs>
     </Modal>
