@@ -1,11 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Spinner, CardGroup, CardDeck, Card, CardColumns, Form, Button, InputGroup } from 'react-bootstrap';
-import axios from 'axios';
-
-const Wrapper = styled.div`
-  display: flex;
-`;
+// import axios from 'axios';
 
 const NearbyPlacesComponent = (props) => {
   const [places, setPlaces] = React.useState(props.placesOfInterest);
@@ -41,8 +37,12 @@ const NearbyPlacesComponent = (props) => {
   //         place_id: places[i].place_id,
   //         fields: 'name,formatted_address,photo,url'
   //       }
-  //     }).then(res => storeNewPlacesDetails(res.data.result))
-  //       .catch(err => console.log(err));
+  //     }).then(res => {
+  //         newPlaces.push(storeNewPlacesDetails(res.data.result));
+  //         // console.log(newPlaces);
+  //       })
+  //       .catch(err => console.log(err))
+  //       // .then(() => console.log(newPlaces));
   //   }
   // }
 
@@ -58,10 +58,17 @@ const NearbyPlacesComponent = (props) => {
   //       params: {
   //         key: process.env.REACT_APP_GOOGLE_API_KEY,
   //         photoreference: place.photos[0].photo_reference,
-  //         maxwidth: '400',
+  //         maxheight: '400',
   //       }
-  //     }).then(res => console.log(res))
-  //       .catch(err => console.log(err));
+  //     }).then(res => {
+  //         newPlace.photo = res.request.responseURL;
+  //       })
+  //       .catch(err => console.log(err))
+  //       .then((newPlace) =>
+  //         {if (Object.keys(newPlace).length > 0) {
+  //           setNewPlaces(prevState => [...prevState, newPlace])
+  //         }});
+
   //   }
   // }
 
@@ -82,9 +89,9 @@ const NearbyPlacesComponent = (props) => {
       {Object.keys(places).length ?
         <CardColumns>
           {places.map(place =>
-            <a href={place.url} target='_blank'>
+            <a href={place.url} target='_blank' rel='noreferrer noopener'>
               <Card text='info'>
-              <Card.Img variant='top' src={place.photo}/>
+              <Card.Img variant='top' src={place.photo} />
               <Card.Body>
                 <Card.Title>{place.name}</Card.Title>
                 <Card.Text>{place.address}</Card.Text>

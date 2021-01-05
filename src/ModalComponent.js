@@ -1,17 +1,17 @@
 import React from 'react';
 import { Modal, Tabs, Tab } from 'react-bootstrap';
-import AgeChartComponent from './AgeChartComponent';
+// import AgeChartComponent from './AgeChartComponent';
 import GenderChartComponent from './GenderChartComponent';
 import RaceChartComponent from './RaceChartComponent';
 import JobsComponent from './JobsComponent';
 import NearbyPlacesComponent from './NearbyPlacesComponent';
 
 const ModalComponent = (props) => {
-  const [show, setShow] = React.useState(props.show);
+  // const [show, setShow] = React.useState(props.show);
   const [key, setKey] = React.useState('gender-demographics');
 
   return (
-    <Modal show={show} onHide={props.onHide} size='lg'>
+    <Modal show={props.show} onHide={props.onHide} size='lg'>
       <Tabs activeKey={key} onSelect={key => setKey(key)}>
         {/* <Tab eventKey='age-demographics' title='Age Demographics'>
           <AgeChartComponent ageByCount={props.ageByCount} ageByPercent={props.ageByPercent}/>

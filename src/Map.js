@@ -9,8 +9,6 @@ const Wrapper = styled.div`
   height: 100vh;
 `;
 
-
-
 class Map extends React.Component {
   constructor(props) {
     super(props);
@@ -47,7 +45,6 @@ class Map extends React.Component {
     this.handleModal = this.handleModal.bind(this);
     this.getDemographics = this.getDemographics.bind(this);
     this.getJobs = this.getJobs.bind(this);
-    // this.waitForData = this.waitForData.bind(this);
   }
 
   handleModal(event) {
@@ -57,6 +54,13 @@ class Map extends React.Component {
   }
 
   getDemographics() {
+    axios.interceptors.response.use((res) => {
+      res.headers['access-control-allow-origin'] = '*';
+      return res;
+    }, (err) => {
+      return Promise.reject(err);
+    });
+
     axios({
       method: 'get',
       url: 'https://api.precisely.com/demographics-segmentation/v1/demographics/byaddress?',
@@ -85,6 +89,13 @@ class Map extends React.Component {
   }
 
   getJobs() {
+    axios.interceptors.response.use((res) => {
+      res.headers['access-control-allow-origin'] = '*';
+      return res;
+    }, (err) => {
+      return Promise.reject(err);
+    });
+
     axios({
       method: 'get',
       url: 'https://api.adzuna.com/v1/api/jobs/us/search/1',
@@ -101,29 +112,19 @@ class Map extends React.Component {
       .catch(err => console.log(err));
   }
 
-  // waitForData(result) {
-  //   setInterval((result) => {
-  //     if (!result || !result.photos || !result.photos[0]) {
-  //       console.log('still waiting')
-  //     } else {
-  //       console.log('exists');
-  //       clearInterval(this.waitForData);
-  //     }
-  //   }, 2000);
-  // }
-
   handleApiLoaded(map, maps) {
     // console.log(maps);
     const geocoder = new maps.Geocoder();
     const service = new maps.places.PlacesService(map);
     map.addListener('click', (event) => {
-    /* ADDRESS COMPONENTS */
+      /* ADDRESS COMPONENTS */
+
       geocoder.geocode({
         'latLng': event.latLng
       }, (results, status) => {
         if (status === maps.GeocoderStatus.OK) {
           if (results[0]) {
-            console.log(results[0]);
+            // console.log(results[0]);
             this.setState({
               addressComponents: results[0].address_components,
               formattedAddress: results[0].formatted_address,
@@ -148,11 +149,11 @@ class Map extends React.Component {
             )
             /* DEMOGRAPHICS */
 
-            // this.getDemographics();
+            this.getDemographics();
 
             /* JOBS */
 
-            // this.getJobs();
+            this.getJobs();
           }
         }
       })
@@ -165,7 +166,7 @@ class Map extends React.Component {
       };
       service.nearbySearch(nearbyRequest, (results, status) => {
         if (status === maps.places.PlacesServiceStatus.OK) {
-          console.log(results);
+          // console.log(results);
           this.setState({
             placesOfInterestUnformatted: results,
             placesOfInterestFormatted: []
@@ -180,7 +181,6 @@ class Map extends React.Component {
                   // console.log(result);
                   // console.log(result.photos[0].getUrl({maxWidth: 400, maxHeight: 400}));
                   if (!result || !result.photos || !result.photos[0]) {
-                    // this.waitForData(result);
                     return;
                   } else {
                       this.setState({
@@ -218,7 +218,7 @@ class Map extends React.Component {
           yesIWantToUseGoogleMapApiInternals
           onGoogleApiLoaded={({map, maps}) => this.handleApiLoaded(map, maps)}
         >
-          {this.state.showModal && this.state.placesOfInterestFormatted.length > 0?
+          {this.state.showModal && this.state.placesOfInterestFormatted.length ?
             <ModalComponent
               show={this.state.showModal}
               onHide={this.handleModal}
